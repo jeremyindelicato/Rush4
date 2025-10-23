@@ -3,7 +3,148 @@ import pandas as pd
 import plotly.express as px
 
 # Configuration de la page Streamlit
-st.set_page_config(layout="wide", page_title="Analyse du Panier Moyen")
+st.set_page_config(layout="wide", page_title="Analyse du Panier Moyen", page_icon="📊")
+
+# CSS personnalisé pour améliorer le design
+st.markdown("""
+    <style>
+    /* Sidebar styling avec couleur orange #ff9300 */
+    [data-testid="stSidebar"] {
+        background-color: #ff9300;
+    }
+
+    [data-testid="stSidebar"] > div:first-child {
+        background-color: #ff9300;
+    }
+
+    /* Style des labels dans la sidebar */
+    [data-testid="stSidebar"] label {
+        color: white !important;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    /* Style des selectbox et radio dans la sidebar */
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] .stRadio label {
+        color: white !important;
+    }
+
+    /* Headers dans la sidebar */
+    [data-testid="stSidebar"] h2 {
+        color: white !important;
+        font-weight: 700;
+        padding-bottom: 10px;
+        border-bottom: 2px solid white;
+    }
+
+    /* Headers h3 dans la sidebar */
+    [data-testid="stSidebar"] h3 {
+        color: white !important;
+        font-weight: 600;
+    }
+
+    /* Texte des paragraphes dans la sidebar */
+    [data-testid="stSidebar"] p {
+        color: white !important;
+    }
+
+    /* Options des selectbox et radio */
+    [data-testid="stSidebar"] [data-baseweb="select"] {
+        background-color: white;
+    }
+
+    /* Texte dans les inputs de la sidebar */
+    [data-testid="stSidebar"] input {
+        color: #1f2937 !important;
+    }
+
+    /* Dividers dans la sidebar */
+    [data-testid="stSidebar"] hr {
+        border-color: white !important;
+    }
+
+    /* Texte dans les options radio */
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        color: white !important;
+    }
+
+    /* Markdown dans la sidebar */
+    [data-testid="stSidebar"] .stMarkdown {
+        color: white !important;
+    }
+
+    /* Style principal du dashboard */
+    .main {
+        background-color: #f8f9fa;
+    }
+
+    /* Titres principaux */
+    h1 {
+        color: #1f2937;
+        font-weight: 700;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #ff9300;
+        margin-bottom: 20px;
+    }
+
+    /* Sous-titres */
+    h2, h3 {
+        color: #374151;
+        font-weight: 600;
+        margin-top: 20px;
+    }
+
+    /* Style des métriques */
+    [data-testid="stMetricValue"] {
+        font-size: 28px;
+        font-weight: 700;
+        color: #ff9300;
+    }
+
+    [data-testid="stMetricLabel"] {
+        font-size: 14px;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    /* Cards pour les métriques */
+    div[data-testid="metric-container"] {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #ff9300;
+    }
+
+    /* Style des descriptions */
+    .stMarkdown p {
+        font-size: 16px;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    /* Séparateurs */
+    hr {
+        margin: 30px 0;
+        border: none;
+        height: 2px;
+        background: linear-gradient(to right, #ff9300, transparent);
+    }
+
+    /* Warnings et infos */
+    .stWarning, .stInfo {
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    /* Amélioration des graphiques */
+    .js-plotly-plot {
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 @st.cache_data
 def load_data(file_path):
@@ -24,7 +165,7 @@ def main():
     """
     Fonction principale de l'application Streamlit.
     """
-    file_path = r'c:\Users\Utilisateur\Desktop\Rush 04\Rush4\Camp_Market_final.csv'
+    file_path = r'data/Camp_Market_final.csv'
     df = load_data(file_path)
 
     if df is None:
@@ -34,13 +175,18 @@ def main():
     df['Enfants/Ados à la maison'] = df['Enfants_Maison'] + df['Ados_Maison']
 
     # --- 2. Configuration des filtres dans la barre latérale ---
-    st.sidebar.header("Filtres")
+    st.sidebar.markdown("## 🎯 Navigation & Filtres")
+    st.sidebar.markdown("---")
 
     # --- NOUVEAU : Navigation entre les pages ---
     page = st.sidebar.radio(
-        "Navigation",
-        ["Analyse du Panier Moyen", "Influence des Campagnes"]
+        "📊 Choisissez une page",
+        ["Analyse du Panier Moyen", "Influence des Campagnes"],
+        label_visibility="visible"
     )
+
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🔍 Filtres de segmentation")
 
     # Filtre pour le statut marital (MODIFIÉ)
     marital_statuses = ['Tous'] + list(df['Statut_Marital'].unique())
@@ -136,15 +282,36 @@ def main():
             # --- 5. Affichage dans les colonnes ---
             with col_graph:
                 st.subheader("Répartition du Panier Moyen par Catégorie")
+
+                # Palette de couleurs personnalisée
+                custom_colors = ['#ff9300', '#ff6b00', '#ffa940', '#ffb366', '#ffc999', '#ffd6b3']
+
                 fig = px.bar(
                     average_spending,
                     x='Catégorie',
                     y='Pourcentage',
-                    color='Catégorie', # Une couleur par catégorie
-                    text=average_spending['Pourcentage'].apply(lambda x: f'{x:.2f}%'), # Affiche le pourcentage sur les barres
-                    title="Pourcentage de chaque catégorie dans le total des dépenses moyennes"
+                    color='Catégorie',
+                    text=average_spending['Pourcentage'].apply(lambda x: f'{x:.2f}%'),
+                    title="Pourcentage de chaque catégorie dans le total des dépenses moyennes",
+                    color_discrete_sequence=custom_colors
                 )
-                fig.update_layout(yaxis_title="Pourcentage du Panier Moyen (%)", xaxis_title="Catégorie de Produit")
+                fig.update_layout(
+                    yaxis_title="Pourcentage du Panier Moyen (%)",
+                    xaxis_title="Catégorie de Produit",
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(size=12, color='#374151'),
+                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    showlegend=False,
+                    hovermode='x unified'
+                )
+                fig.update_traces(
+                    textposition='outside',
+                    marker=dict(line=dict(width=0)),
+                    hovertemplate='<b>%{x}</b><br>%{y:.2f}%<extra></extra>'
+                )
+                fig.update_xaxes(showgrid=False)
+                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
                 st.plotly_chart(fig, use_container_width=True)
 
             with col_kpi:
@@ -220,17 +387,47 @@ def main():
                 x='Canal',
                 y='Achats',
                 color='Type',
-                text='Texte', # Utilise la colonne de texte personnalisée
+                text='Texte',
                 title="Volume des Ventes par Canal (Normal vs. Promotion)",
                 labels={'Achats': 'Nombre total d\'achats'},
-                barmode='stack' # Assure que les barres sont empilées
+                barmode='stack',
+                color_discrete_map={'Normal': '#3b82f6', 'Promotion': '#ff9300'}
             )
-            fig_channels.update_traces(textposition='inside') # Positionne le texte à l'intérieur des barres
+            fig_channels.update_layout(
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12, color='#374151'),
+                title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1,
+                    bgcolor='rgba(255,255,255,0.8)',
+                    bordercolor='#e5e7eb',
+                    borderwidth=1
+                ),
+                hovermode='x unified'
+            )
+            fig_channels.update_traces(
+                textposition='inside',
+                marker=dict(line=dict(width=0)),
+                hovertemplate='%{y:,.0f} achats<extra></extra>'
+            )
+            fig_channels.update_xaxes(showgrid=False)
+            fig_channels.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
 
             # Ajoute les totaux au-dessus des barres empilées
             for i, total in enumerate(df_totals['Achats']):
-                fig_channels.add_annotation(x=df_totals['Canal'][i], y=total, text=f"Total: {total:,.0f}",
-                                          showarrow=False, yshift=10)
+                fig_channels.add_annotation(
+                    x=df_totals['Canal'][i],
+                    y=total,
+                    text=f"<b>{total:,.0f}</b>",
+                    showarrow=False,
+                    yshift=10,
+                    font=dict(size=14, color='#1f2937', family='Arial Black')
+                )
 
             with col_chart_channels:
                 st.plotly_chart(fig_channels, use_container_width=True)
@@ -251,19 +448,33 @@ def main():
                 visites_par_segment = visites_par_segment.sort_values('Segmentation_Dépensier')
 
                 # Créer le graphique à barres
+                segment_colors = {'Petits Dépensier': '#ffd6b3', 'Moyens Dépensier': '#ffa940', 'Grand Dépensier': '#ff6b00'}
                 fig_visites = px.bar(
                     visites_par_segment,
                     x='Segmentation_Dépensier',
                     y='Visites_Web_Mois',
                     color='Segmentation_Dépensier',
                     text=visites_par_segment['Visites_Web_Mois'].apply(lambda x: f'{x:.1f}'),
-                    title="Nombre Moyen de Visites Web par Mois par Segment"
+                    title="Nombre Moyen de Visites Web par Mois par Segment",
+                    color_discrete_map=segment_colors
                 )
                 fig_visites.update_layout(
                     xaxis_title="Segment de Dépensier",
                     yaxis_title="Visites Moyennes par Mois",
-                    showlegend=False
+                    showlegend=False,
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(size=12, color='#374151'),
+                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    hovermode='x'
                 )
+                fig_visites.update_traces(
+                    textposition='outside',
+                    marker=dict(line=dict(width=0)),
+                    hovertemplate='<b>%{x}</b><br>%{y:.1f} visites/mois<extra></extra>'
+                )
+                fig_visites.update_xaxes(showgrid=False)
+                fig_visites.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
                 st.plotly_chart(fig_visites, use_container_width=True)
 
         else:
@@ -368,26 +579,43 @@ def main():
             })
 
             # Créer le graphique à colonnes
+            campaign_colors = ['#ff9300', '#ff6b00', '#ffa940', '#ff7f1f', '#ffb366', '#ff8533']
             fig_campaigns = px.bar(
                 df_campaigns,
                 x='Campagne',
                 y='Nombre de Réponses',
                 color='Campagne',
                 text='Nombre de Réponses',
-                title="Nombre de Réponses Positives par Campagne"
+                title="Nombre de Réponses Positives par Campagne",
+                color_discrete_sequence=campaign_colors
             )
             fig_campaigns.update_layout(
                 xaxis_title="Campagne Marketing",
                 yaxis_title="Nombre de Réponses Positives",
-                showlegend=False
+                showlegend=False,
+                plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
+                font=dict(size=12, color='#374151'),
+                title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                hovermode='x'
             )
-            fig_campaigns.update_traces(textposition='outside')
+            fig_campaigns.update_traces(
+                textposition='outside',
+                marker=dict(line=dict(width=0)),
+                hovertemplate='<b>%{x}</b><br>%{y} réponses<extra></extra>'
+            )
+            fig_campaigns.update_xaxes(showgrid=False)
+            fig_campaigns.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
 
             # --- NOUVEAU : Ajout de la ligne de seuil de rentabilité ---
-            fig_campaigns.add_hline(y=611, line_dash="dot",
-              annotation_text="Seuil de rentabilité (611 réponses)", 
-              annotation_position="bottom right",
-              line_color="red"
+            fig_campaigns.add_hline(
+                y=611,
+                line_dash="dash",
+                annotation_text="Seuil de rentabilité (611 réponses)",
+                annotation_position="bottom right",
+                line_color="#ef4444",
+                line_width=3,
+                annotation_font=dict(size=12, color='#ef4444', family='Arial')
             )
 
             st.plotly_chart(fig_campaigns, use_container_width=True)
@@ -407,19 +635,33 @@ def main():
                 recence_par_segment = recence_par_segment.sort_values('Segmentation_Dépensier')
 
                 # Créer le graphique à barres
+                segment_colors_recency = {'Petits Dépensier': '#ffd6b3', 'Moyens Dépensier': '#ffa940', 'Grand Dépensier': '#ff6b00'}
                 fig_recency = px.bar(
                     recence_par_segment,
                     x='Segmentation_Dépensier',
                     y='Jours_Dernier_Achat',
                     color='Segmentation_Dépensier',
                     text=recence_par_segment['Jours_Dernier_Achat'].apply(lambda x: f'{x:.1f} jours'),
-                    title="Nombre de Jours Moyen depuis le Dernier Achat par Segment"
+                    title="Nombre de Jours Moyen depuis le Dernier Achat par Segment",
+                    color_discrete_map=segment_colors_recency
                 )
                 fig_recency.update_layout(
                     xaxis_title="Segment de Dépensier",
                     yaxis_title="Jours Moyens depuis le Dernier Achat",
-                    showlegend=False
+                    showlegend=False,
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    font=dict(size=12, color='#374151'),
+                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    hovermode='x'
                 )
+                fig_recency.update_traces(
+                    textposition='outside',
+                    marker=dict(line=dict(width=0)),
+                    hovertemplate='<b>%{x}</b><br>%{y:.1f} jours<extra></extra>'
+                )
+                fig_recency.update_xaxes(showgrid=False)
+                fig_recency.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
                 st.plotly_chart(fig_recency, use_container_width=True)
             else:
                 st.warning("Les colonnes 'Jours_Dernier_Achat' et 'Segmentation_Dépensier' sont nécessaires pour ce graphique.")
