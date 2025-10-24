@@ -3,18 +3,18 @@ import pandas as pd
 import plotly.express as px
 
 # Configuration de la page Streamlit
-st.set_page_config(layout="wide", page_title="Analyse du Panier Moyen", page_icon="📊")
+st.set_page_config(layout="wide", page_title="Analyse du Panier Moyen")
 
 # CSS personnalisé pour améliorer le design
 st.markdown("""
     <style>
     /* Sidebar styling avec couleur orange #ff9300 */
-    [data-testid="stSidebar"] {
-        background-color: #ff9300;
+    [data-testid="stSidebar"] > div:first-child {
+        background-color: #495057; /* Gris foncé */
     }
 
-    [data-testid="stSidebar"] > div:first-child {
-        background-color: #ff9300;
+    [data-testid="stSidebar"] {
+        background-color: #495057; /* Gris foncé */
     }
 
     /* Style des labels dans la sidebar */
@@ -35,13 +35,15 @@ st.markdown("""
         color: white !important;
         font-weight: 700;
         padding-bottom: 10px;
-        border-bottom: 2px solid white;
+        border-bottom: 2px solid white; 
+        text-align: center;
     }
 
     /* Headers h3 dans la sidebar */
     [data-testid="stSidebar"] h3 {
         color: white !important;
         font-weight: 600;
+        text-align: center;
     }
 
     /* Texte des paragraphes dans la sidebar */
@@ -76,51 +78,54 @@ st.markdown("""
 
     /* Style principal du dashboard */
     .main {
-        background-color: #f8f9fa;
+        background-color: #111827; /* Fond principal très foncé */
     }
 
     /* Titres principaux */
     h1 {
-        color: #1f2937;
+        color: white;
         font-weight: 700;
         padding-bottom: 20px;
-        border-bottom: 3px solid #ff9300;
+        border-bottom: 3px solid #495057;
         margin-bottom: 20px;
+        text-align: center;
     }
 
     /* Sous-titres */
     h2, h3 {
-        color: #374151;
+        color: #d1d5db; /* Gris clair pour les sous-titres */
         font-weight: 600;
         margin-top: 20px;
+        text-align: center;
     }
 
     /* Style des métriques */
     [data-testid="stMetricValue"] {
         font-size: 28px;
         font-weight: 700;
-        color: #ff9300;
+        color: white;
     }
 
     [data-testid="stMetricLabel"] {
         font-size: 14px;
         font-weight: 600;
-        color: #6b7280;
-    }
+        color: #9ca3af; /* Gris pour les labels */
+    } 
 
     /* Cards pour les métriques */
     div[data-testid="metric-container"] {
-        background-color: white;
+        background-color: #1f2937; /* Fond des cartes plus clair */
         padding: 20px;
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        border-left: 4px solid #ff9300;
+        border-left: 4px solid #495057;
+        text-align: center;
     }
 
     /* Style des descriptions */
     .stMarkdown p {
         font-size: 16px;
-        color: #4b5563;
+        color: #d1d5db; /* Gris clair pour le texte */
         line-height: 1.6;
     }
 
@@ -129,7 +134,7 @@ st.markdown("""
         margin: 30px 0;
         border: none;
         height: 2px;
-        background: linear-gradient(to right, #ff9300, transparent);
+        background: linear-gradient(to right, #495057, transparent);
     }
 
     /* Warnings et infos */
@@ -175,26 +180,25 @@ def main():
     df['Enfants/Ados à la maison'] = df['Enfants_Maison'] + df['Ados_Maison']
 
     # --- 2. Configuration des filtres dans la barre latérale ---
-    st.sidebar.markdown("## 🎯 Navigation & Filtres")
+    st.sidebar.markdown("## Navigation & Filtres")
     st.sidebar.markdown("---")
 
     # --- NOUVEAU : Navigation entre les pages ---
     page = st.sidebar.radio(
-        "📊 Choisissez une page",
-        ["Analyse du Panier Moyen", "Influence des Campagnes"],
+        "Choisissez une page",
+        ["Analyse du client type", "Influence des Campagnes"],
         label_visibility="visible"
     )
 
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 🔍 Filtres de segmentation")
-
+    st.sidebar.markdown("### Filtres de segmentation")
+    
     # Filtre pour le statut marital (MODIFIÉ)
     marital_statuses = ['Tous'] + list(df['Statut_Marital'].unique())
     selected_marital = st.sidebar.selectbox(
         "Statut Marital",
         options=marital_statuses
     )
-
     # Filtre pour la catégorie d'âge
     age_categories = ['Tous'] + list(df['Categorie_Age'].unique())
     selected_age = st.sidebar.selectbox(
@@ -249,8 +253,8 @@ def main():
     # ==============================================================================
     # --- PAGE 1 : ANALYSE DU PANIER MOYEN ---
     # ==============================================================================
-    if page == "Analyse du Panier Moyen":
-        st.title("📊 Analyse de la Composition du Panier Moyen")
+    if page == "Analyse du client type":
+        st.title("Analyse du client type")
         st.markdown("Ce tableau de bord interactif permet d'analyser la répartition des dépenses moyennes par catégorie de produits.")
 
         if not df_filtered.empty:
@@ -269,14 +273,6 @@ def main():
             average_monthly_income = average_income / 12
             avg_spending_per_purchase = df_filtered['Depense_Moy_Par_Achat'].mean()
             average_age = df_filtered['Age_Inscription'].mean()
-            average_purchases = df_filtered['Total_Achats'].mean()
-
-            # --- NOUVEAU : Calcul du KPI sur les plaintes ---
-            if 'Plainte' in df_filtered.columns:
-                total_plaintes = df_filtered['Plainte'].sum()
-                pourcentage_plaintes = (total_plaintes / len(df_filtered)) * 100 if len(df_filtered) > 0 else 0
-
-            # Calcul du pourcentage pour le graphique
             average_spending['Pourcentage'] = (average_spending['Dépense Moyenne'] / total_average_spending) * 100
 
             # --- 5. Affichage dans les colonnes ---
@@ -284,7 +280,7 @@ def main():
                 st.subheader("Répartition du Panier Moyen par Catégorie")
 
                 # Palette de couleurs personnalisée
-                custom_colors = ['#ff9300', '#ff6b00', '#ffa940', '#ffb366', '#ffc999', '#ffd6b3']
+                custom_colors = ['#99ccff', '#99ff99', '#ffcc99', '#ff9999', '#ffff99', '#cc99ff'] # Couleurs pastel
 
                 fig = px.bar(
                     average_spending,
@@ -300,8 +296,8 @@ def main():
                     xaxis_title="Catégorie de Produit",
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(size=12, color='#374151'),
-                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    font=dict(size=12, color='white'),
+                    title_font=dict(size=18, color='white', family='Arial Black'),
                     showlegend=False,
                     hovermode='x unified'
                 )
@@ -311,7 +307,7 @@ def main():
                     hovertemplate='<b>%{x}</b><br>%{y:.2f}%<extra></extra>'
                 )
                 fig.update_xaxes(showgrid=False)
-                fig.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
+                fig.update_yaxes(showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)')
                 st.plotly_chart(fig, use_container_width=True)
 
             with col_kpi:
@@ -321,11 +317,6 @@ def main():
                 st.metric(label="Valeur du Panier Moyen", value=f"{total_average_spending:,.2f} €")
                 st.metric(label="Dépense Moyenne par Achat", value=f"{avg_spending_per_purchase:,.2f} €")
                 st.metric(label="Âge Moyen", value=f"{average_age:.1f} ans")
-                st.metric(label="Nombre d'Achats Moyen", value=f"{average_purchases:.1f}")
-                # --- NOUVEAU : Affichage du KPI sur les plaintes ---
-                if 'Plainte' in df_filtered.columns:
-                    st.metric(label="Taux de Plaintes", value=f"{pourcentage_plaintes:.2f} %",
-                              help="Pourcentage de clients s'étant plaints dans la sélection actuelle.")
 
             # --- 6. NOUVEAU GRAPHIQUE : Analyse des lieux d'achat ---
             st.markdown("---") # Ajoute une ligne de séparation
@@ -376,11 +367,22 @@ def main():
             total_normal_achats = sum(normaux_par_plateforme.values())
             total_achats = total_promo_achats + total_normal_achats
             
+            # Calcul du nombre moyen d'achats par client
+            nb_clients_filtres = len(df_filtered)
+            achats_moyens_par_client = total_achats / nb_clients_filtres if nb_clients_filtres > 0 else 0
             pourcentage_promo_total = (total_promo_achats / total_achats) * 100 if total_achats > 0 else 0
+            if 'Plainte' in df_filtered.columns:
+                total_plaintes = df_filtered['Plainte'].sum()
+                pourcentage_plaintes = (total_plaintes / len(df_filtered)) * 100 if len(df_filtered) > 0 else 0
+
 
             with col_kpi_promo:
-                st.metric(label="% d'Achats en Promotion", value=f"{pourcentage_promo_total:.1f} %")
-
+                st.metric(label="Achats Moyens par Client", value=f"{achats_moyens_par_client:.1f}")
+                st.metric(label="Taux d'Achats en Promotion", value=f"{pourcentage_promo_total:.1f} %")
+                if 'Plainte' in df_filtered.columns:
+                    st.metric(label="Taux de Plaintes", value=f"{pourcentage_plaintes:.2f} %",
+                              help="Pourcentage de clients s'étant plaints dans la sélection actuelle.")
+                
             # Création du graphique à barres
             fig_channels = px.bar(
                 df_channels,
@@ -391,22 +393,21 @@ def main():
                 title="Volume des Ventes par Canal (Normal vs. Promotion)",
                 labels={'Achats': 'Nombre total d\'achats'},
                 barmode='stack',
-                color_discrete_map={'Normal': '#3b82f6', 'Promotion': '#ff9300'}
+                color_discrete_map={'Normal': '#99ccff', 'Promotion': '#ffcc99'} # Pastel: Bleu, Orange
             )
             fig_channels.update_layout(
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(size=12, color='#374151'),
-                title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                font=dict(size=12, color='white'),
+                title_font=dict(size=18, color='white', family='Arial Black'),
                 legend=dict(
                     orientation="h",
-                    yanchor="bottom",
-                    y=1.02,
-                    xanchor="right",
-                    x=1,
-                    bgcolor='rgba(255,255,255,0.8)',
-                    bordercolor='#e5e7eb',
-                    borderwidth=1
+                    yanchor="top",
+                    y=-0.2,
+                    xanchor="center",
+                    x=0.5,
+                    bgcolor='rgba(0,0,0,0)',
+                    borderwidth=0
                 ),
                 hovermode='x unified'
             )
@@ -416,7 +417,7 @@ def main():
                 hovertemplate='%{y:,.0f} achats<extra></extra>'
             )
             fig_channels.update_xaxes(showgrid=False)
-            fig_channels.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
+            fig_channels.update_yaxes(showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)')
 
             # Ajoute les totaux au-dessus des barres empilées
             for i, total in enumerate(df_totals['Achats']):
@@ -426,7 +427,7 @@ def main():
                     text=f"<b>{total:,.0f}</b>",
                     showarrow=False,
                     yshift=10,
-                    font=dict(size=14, color='#1f2937', family='Arial Black')
+                    font=dict(size=14, color='white', family='Arial Black')
                 )
 
             with col_chart_channels:
@@ -448,7 +449,7 @@ def main():
                 visites_par_segment = visites_par_segment.sort_values('Segmentation_Dépensier')
 
                 # Créer le graphique à barres
-                segment_colors = {'Petits Dépensier': '#ffd6b3', 'Moyens Dépensier': '#ffa940', 'Grand Dépensier': '#ff6b00'}
+                segment_colors = {'Petits Dépensier': '#99ff99', 'Moyens Dépensier': '#ffcc99', 'Grand Dépensier': '#ff9999'} # Pastel: Vert, Orange, Rouge
                 fig_visites = px.bar(
                     visites_par_segment,
                     x='Segmentation_Dépensier',
@@ -464,8 +465,8 @@ def main():
                     showlegend=False,
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(size=12, color='#374151'),
-                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    font=dict(size=12, color='white'),
+                    title_font=dict(size=18, color='white', family='Arial Black'),
                     hovermode='x'
                 )
                 fig_visites.update_traces(
@@ -474,7 +475,7 @@ def main():
                     hovertemplate='<b>%{x}</b><br>%{y:.1f} visites/mois<extra></extra>'
                 )
                 fig_visites.update_xaxes(showgrid=False)
-                fig_visites.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
+                fig_visites.update_yaxes(showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)')
                 st.plotly_chart(fig_visites, use_container_width=True)
 
         else:
@@ -484,7 +485,7 @@ def main():
     # --- NOUVELLE PAGE 2 : INFLUENCE DES CAMPAGNES ---
     # ==============================================================================
     elif page == "Influence des Campagnes":
-        st.title("📈 Influence des Campagnes Marketing")
+        st.title("Influence des Campagnes Marketing")
         st.markdown("Analyse du nombre de réponses positives pour chaque campagne marketing, selon les segments de clients sélectionnés.")
 
         # --- NOUVEAU : Filtre spécifique à la page Campagne ---
@@ -579,7 +580,7 @@ def main():
             })
 
             # Créer le graphique à colonnes
-            campaign_colors = ['#ff9300', '#ff6b00', '#ffa940', '#ff7f1f', '#ffb366', '#ff8533']
+            campaign_colors = ['#99ccff', '#99ff99', '#ffcc99', '#ff9999', '#ffff99', '#cc99ff'] # Couleurs pastel
             fig_campaigns = px.bar(
                 df_campaigns,
                 x='Campagne',
@@ -595,8 +596,8 @@ def main():
                 showlegend=False,
                 plot_bgcolor='rgba(0,0,0,0)',
                 paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(size=12, color='#374151'),
-                title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                font=dict(size=12, color='white'),
+                title_font=dict(size=18, color='white', family='Arial Black'),
                 hovermode='x'
             )
             fig_campaigns.update_traces(
@@ -605,7 +606,7 @@ def main():
                 hovertemplate='<b>%{x}</b><br>%{y} réponses<extra></extra>'
             )
             fig_campaigns.update_xaxes(showgrid=False)
-            fig_campaigns.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
+            fig_campaigns.update_yaxes(showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)')
 
             # --- NOUVEAU : Ajout de la ligne de seuil de rentabilité ---
             fig_campaigns.add_hline(
@@ -635,7 +636,7 @@ def main():
                 recence_par_segment = recence_par_segment.sort_values('Segmentation_Dépensier')
 
                 # Créer le graphique à barres
-                segment_colors_recency = {'Petits Dépensier': '#ffd6b3', 'Moyens Dépensier': '#ffa940', 'Grand Dépensier': '#ff6b00'}
+                segment_colors_recency = {'Petits Dépensier': '#99ff99', 'Moyens Dépensier': '#ffcc99', 'Grand Dépensier': '#ff9999'} # Pastel: Vert, Orange, Rouge
                 fig_recency = px.bar(
                     recence_par_segment,
                     x='Segmentation_Dépensier',
@@ -651,8 +652,8 @@ def main():
                     showlegend=False,
                     plot_bgcolor='rgba(0,0,0,0)',
                     paper_bgcolor='rgba(0,0,0,0)',
-                    font=dict(size=12, color='#374151'),
-                    title_font=dict(size=18, color='#1f2937', family='Arial Black'),
+                    font=dict(size=12, color='white'),
+                    title_font=dict(size=18, color='white', family='Arial Black'),
                     hovermode='x'
                 )
                 fig_recency.update_traces(
@@ -661,7 +662,7 @@ def main():
                     hovertemplate='<b>%{x}</b><br>%{y:.1f} jours<extra></extra>'
                 )
                 fig_recency.update_xaxes(showgrid=False)
-                fig_recency.update_yaxes(showgrid=True, gridcolor='rgba(0,0,0,0.05)')
+                fig_recency.update_yaxes(showgrid=True, gridcolor='rgba(255, 255, 255, 0.1)')
                 st.plotly_chart(fig_recency, use_container_width=True)
             else:
                 st.warning("Les colonnes 'Jours_Dernier_Achat' et 'Segmentation_Dépensier' sont nécessaires pour ce graphique.")
