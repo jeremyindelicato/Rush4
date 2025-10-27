@@ -7,14 +7,36 @@ Projet d'analyse de données marketing avec tableaux de bord interactifs pour an
 
 ### Prérequis
 - Python 3.9 ou supérieur
-- Un environnement virtuel (`.venv`)
 
 ### Installation des dépendances
 
-1. Activez l'environnement virtuel et installez les packages nécessaires :
+#### Option 1 : Avec environnement virtuel (Recommandé)
+
+1. Créer un environnement virtuel :
+```bash
+cd 05_Dashboard_Analytics
+python3 -m venv .venv
+```
+
+2. Activer l'environnement virtuel :
 ```bash
 source .venv/bin/activate
-pip install streamlit pandas plotly
+```
+
+3. Installer les dépendances :
+```bash
+pip install -r requirements.txt
+```
+
+#### Option 2 : Installation globale
+
+```bash
+pip3 install -r requirements.txt
+```
+
+Ou manuellement :
+```bash
+pip3 install streamlit==1.31.0 pandas==2.1.4 plotly==5.18.0
 ```
 
 ## Utilisation
@@ -23,8 +45,26 @@ pip install streamlit pandas plotly
 
 Le dashboard principal permet d'analyser la composition du panier moyen et l'influence des campagnes marketing.
 
+#### Avec environnement virtuel
+
+Depuis le répertoire 05_Dashboard_Analytics :
 ```bash
-source .venv/bin/activate && streamlit run dashboard.py
+cd 05_Dashboard_Analytics
+source .venv/bin/activate
+streamlit run dashboard.py
+```
+
+#### Sans environnement virtuel
+
+Option 1 - Depuis le répertoire racine du projet :
+```bash
+python3 -m streamlit run 05_Dashboard_Analytics/dashboard.py
+```
+
+Option 2 - Depuis le répertoire 05_Dashboard_Analytics :
+```bash
+cd 05_Dashboard_Analytics
+python3 -m streamlit run dashboard.py
 ```
 
 Le dashboard s'ouvrira automatiquement dans votre navigateur à l'adresse `http://localhost:8501`
@@ -54,11 +94,12 @@ Le dashboard propose deux pages principales :
 
 ## Structure du Projet
 
-- `dashboard_panier_moyen.py` : Dashboard principal Streamlit
-- `Camp_Market_final.csv` : Fichier de données
-- Scripts d'analyse Python (analyse_*.py)
-- Dossiers de graphiques générés
+- `dashboard.py` : Dashboard principal Streamlit
+- `data/Dataset_Dashboard_Analytics.csv` : Fichier de données
+- `requirements.txt` : Librairies Python nécessaires
+- `optimisation_roi.py` : Script d'optimisation du ROI
+- `graph/` : Dossier des graphiques générés
 
 ## Données
 
-Le fichier `Camp_Market_final.csv` contient les données clients et leurs comportements d'achat.
+Le fichier `data/Dataset_Dashboard_Analytics.csv` contient les données clients et leurs comportements d'achat.

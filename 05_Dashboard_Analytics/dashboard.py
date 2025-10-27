@@ -170,7 +170,7 @@ def main():
     """
     Fonction principale de l'application Streamlit.
     """
-    file_path = r'data/Camp_Market_final.csv'
+    file_path = r'data/Dataset_Dashboard_Analytics.csv'
     df = load_data(file_path)
 
     if df is None:

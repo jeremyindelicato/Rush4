@@ -5,7 +5,7 @@ import os
 
 def main():
     # --- 1. CHARGEMENT ET PRÉPARATION DES DONNÉES ---
-    file_path = r'c:\Users\Utilisateur\Desktop\Epitech\Rush_4\Camp_Market_final.csv'
+    file_path = r'05_Dashboard_Analytics/data/Dataset_Dashboard_Analytics.csv'
     output_dir = r'c:\Users\Utilisateur\Desktop\Epitech\Rush_4\graph_optimisation'
     os.makedirs(output_dir, exist_ok=True)
 

@@ -27,16 +27,42 @@ st.markdown("---")
 def load_model():
     try:
         model = joblib.load('xgboost_champion_optimized.pkl')
-        return model
+        return model, None
     except FileNotFoundError:
-        st.error("❌ Modèle non trouvé. Assurez-vous que 'xgboost_champion_optimized.pkl' est dans le même dossier.")
-        return None
+        return None, "❌ Modèle non trouvé. Assurez-vous que 'xgboost_champion_optimized.pkl' est dans le même dossier."
+    except Exception as e:
+        error_msg = str(e)
+        if "libomp" in error_msg.lower() or "openmp" in error_msg.lower():
+            return None, """
+            ⚠️ **Problème de compatibilité XGBoost détecté**
+
+            Le modèle XGBoost nécessite la bibliothèque OpenMP (libomp) pour Apple Silicon.
+
+            **Solution rapide** :
+            ```bash
+            # Installer Homebrew ARM64 si nécessaire
+            arch -arm64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+            # Installer libomp
+            /opt/homebrew/bin/brew install libomp
+            ```
+
+            Puis relancez l'application.
+
+            **Alternative** : Contactez l'administrateur pour obtenir une version compatible du modèle.
+            """
+        return None, f"❌ Erreur lors du chargement du modèle: {str(e)}"
 
 # Charger le modèle
-model = load_model()
+model, error_message = load_model()
 
 if model is not None:
     st.success("✅ Modèle chargé avec succès (ROC-AUC: 0.8947, F1-Score: 0.6259)")
+elif error_message:
+    st.error(error_message)
+    st.info("💡 **Mode Démonstration** : L'interface est disponible mais les prédictions ne fonctionneront pas sans le modèle.")
+else:
+    st.warning("⚠️ Modèle non chargé. Mode démonstration uniquement.")
 
 # Sidebar pour la navigation
 st.sidebar.title("🎯 Navigation")
