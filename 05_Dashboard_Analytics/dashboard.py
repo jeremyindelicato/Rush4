@@ -530,8 +530,8 @@ def main():
                 taux_participation = (nb_reponses / nb_clients_filtres) * 100 if nb_clients_filtres > 0 else 0
                 
                 # ROI
-                cout_contact = df_filtered['Cout_Contact_Z'].iloc[0]
-                revenu_conversion = df_filtered['Revenus_Z'].iloc[0]
+                cout_contact = df_filtered['cout par campagne'].iloc[0]
+                revenu_conversion = df_filtered['revenue par campagne'].iloc[0]
                 cout_total = nb_clients_filtres * cout_contact
                 revenu_total = nb_reponses * revenu_conversion
                 roi = ((revenu_total - cout_total) / cout_total) * 100 if cout_total > 0 else 0
