@@ -301,16 +301,90 @@ elif mode == "📋 Prédiction en Batch":
 
             if st.button("🔮 LANCER LES PRÉDICTIONS", type="primary"):
                 if model is not None:
+                    # Mapping des colonnes : CSV -> Modèle
+                    column_mapping = {
+                        # Campagnes
+                        'Accepte_Campagne1': 'Reponse_Campagne_1',
+                        'Accepte_Campagne2': 'Reponse_Campagne_2',
+                        'Accepte_Campagne3': 'Reponse_Campagne_3',
+                        'Accepte_Campagne4': 'Reponse_Campagne_4',
+                        'Accepte_Campagne5': 'Reponse_Campagne_5',
+                        # Achats (attention aux doublons !)
+                        'Total_Achats_Web': 'Achats_En_Ligne',
+                        'Total_Achats_Catalogue': 'Achats_Catalogue',
+                        'Total_Achats_Magasin': 'Achats_En_Magasin',  # On garde celui-ci
+                        'Total_Achats_Promo': 'Achats_Promotions',
+                        # Autres
+                        'Reclamation': 'Plainte',
+                        'A_Enfants': 'A_Des_Enfants',
+                        'Age': 'Age_Inscription',
+                    }
+
+                    st.info(f"📋 Colonnes dans le CSV: {list(df.columns)}")
+
+                    # Renommer les colonnes si elles existent
+                    df_renamed = df.rename(columns=column_mapping)
+
+                    # Calculer les features manquantes si nécessaire
+                    if 'Revenu_Moyen_Mois' not in df_renamed.columns and 'Revenu' in df_renamed.columns:
+                        df_renamed['Revenu_Moyen_Mois'] = df_renamed['Revenu'] / 12
+
+                    if 'Jour_Inscription_Encode' not in df_renamed.columns:
+                        df_renamed['Jour_Inscription_Encode'] = 1  # Valeur par défaut
+
+                    if 'Categorie_Age_Encode' not in df_renamed.columns and 'Age_Inscription' in df_renamed.columns:
+                        df_renamed['Categorie_Age_Encode'] = df_renamed['Age_Inscription'].apply(
+                            lambda x: 1 if x < 35 else 2 if x < 50 else 3
+                        )
+
+                    if 'Taux_Reponse_Historique' not in df_renamed.columns and 'Total_Campagnes_Acceptees' in df_renamed.columns:
+                        df_renamed['Taux_Reponse_Historique'] = df_renamed['Total_Campagnes_Acceptees'] / 5
+
                     # Préparer les données
                     colonnes_a_exclure = [
                         'ID_Client', 'Annee_Naissance', 'Date_Inscription',
                         'Niveau_Education', 'Statut_Marital', 'Statut_Marital_Texte',
                         'Jour_Inscription', 'Categorie_Age', 'Cout_Contact_Z',
                         'Revenus_Z', 'Reponse_Derniere_Campagne',
-                        'Enfants_Maison', 'Ados_Maison'
+                        'Enfants_Maison', 'Ados_Maison',
+                        'Mois_Inscription', 'Anciennete_Jours', 'Achats_Hors_Promo',
+                        'Achats_En_Magasin'  # Doublon avec Total_Achats_Magasin
                     ]
 
-                    X = df.drop(columns=colonnes_a_exclure, errors='ignore')
+                    X = df_renamed.drop(columns=colonnes_a_exclure, errors='ignore')
+
+                    # Debug: afficher le nombre de colonnes
+                    st.info(f"🔍 Debug: {len(X.columns)} colonnes après exclusion")
+
+                    # Définir les 36 features attendues par le modèle (dans l'ordre)
+                    expected_features = [
+                        'Revenu', 'Jours_Dernier_Achat', 'Achat_Vins', 'Achat_Fruits',
+                        'Achat_Viandes', 'Achat_Poissons', 'Achat_Produits_Sucres', 'Achat_Produits_Or',
+                        'Achats_Promotions', 'Achats_En_Ligne', 'Achats_Catalogue', 'Achats_En_Magasin',
+                        'Visites_Web_Mois', 'Reponse_Campagne_3', 'Reponse_Campagne_4', 'Reponse_Campagne_5',
+                        'Reponse_Campagne_1', 'Reponse_Campagne_2', 'Plainte', 'Total_Depense',
+                        'Total_Achats', 'Depense_Moy_Par_Achat', 'Total_Campagnes_Acceptees', 'Revenu_Moyen_Mois',
+                        'Age_Inscription', 'Niveau_Education_Encode', 'Statut_Marital_Encode', 'Jour_Inscription_Encode',
+                        'Categorie_Age_Encode', 'Total_Enfants', 'A_Des_Enfants', 'Ratio_Vins',
+                        'Ratio_Viandes', 'Taux_Reponse_Historique', 'Engagement_Web', 'Sensibilite_Promo'
+                    ]
+
+                    # Ajouter les colonnes manquantes avec des valeurs par défaut
+                    for col in expected_features:
+                        if col not in X.columns:
+                            st.warning(f"⚠️ Colonne manquante '{col}' - Ajout avec valeur par défaut 0")
+                            X[col] = 0
+
+                    # Réordonner les colonnes pour correspondre exactement au modèle
+                    X = X[expected_features]
+
+                    # Debug: vérifier le nombre final de colonnes
+                    st.success(f"✅ {len(X.columns)} features finales envoyées au modèle (attendu: 36)")
+
+                    if len(X.columns) != 36:
+                        st.error(f"❌ ERREUR: {len(X.columns)} colonnes au lieu de 36 !")
+                        st.write("Colonnes présentes:", list(X.columns))
+                        st.stop()
 
                     # Imputation
                     from sklearn.impute import SimpleImputer
